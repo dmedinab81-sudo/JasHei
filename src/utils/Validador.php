@@ -31,9 +31,9 @@ class Validador {
             return false;
         }
         
-        // Verificar que el tercer dígito no sea mayor a 6
+        // Verificar que el tercer dígito sea válido (0-5 para personas naturales, 6 para RUC)
         $tercerDigito = intval(substr($cedula, 2, 1));
-        if ($tercerDigito > 6) {
+        if ($tercerDigito > 9) {
             return false;
         }
         
