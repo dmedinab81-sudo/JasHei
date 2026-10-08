@@ -1,36 +1,100 @@
 <?php
-/**
- * Gestión de Pacientes
- * Página principal para listar, buscar y crear pacientes
- */
 
-require_once dirname(__DIR__) . '/config/Config.php';
-require_once CONFIG_PATH . '/Database.php';
-require_once SRC_PATH . '/Auth.php';
-require_once SRC_PATH . '/models/Paciente.php';
+declare(strict_types=1);
 
-// Verificar sesión
-$auth = new Auth();
-if (!$auth->estaAutenticado()) {
-    header('Location: index.php');
-    exit;
+session_start();
+require __DIR__ . '/../config/database.php';
+require __DIR__ . '/../src/Auth.php';
+
+Auth::requireLogin();
+$user = $_SESSION['user'];
+
+// Conectar a base de datos
+$dsn = sprintf(
+    'mysql:host=%s;port=%s;dbname=%s;charset=%s',
+    $config['host'],
+    $config['port'],
+    $config['database'],
+    $config['charset']
+);
+
+try {
+    $pdo = new PDO($dsn, $config['username'], $config['password'], [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+} catch (PDOException $e) {
+    die('Error de conexión a la base de datos');
 }
 
-$pacienteModel = new Paciente();
 $filtros = [
     'nombre' => $_GET['nombre'] ?? '',
     'cedula' => $_GET['cedula'] ?? '',
     'pagina' => $_GET['pagina'] ?? 1
 ];
 
-$resultado = $pacienteModel->listar($filtros);
+$pacientes = [];
+$total = 0;
+$total_paginas = 0;
+
+// Buscar pacientes
+$limit = 20;
+$offset = (intval($filtros['pagina']) - 1) * $limit;
+
+$sql = "SELECT * FROM pacientes WHERE 1=1";
+$params = [];
+
+if (!empty($filtros['nombre'])) {
+    $sql .= " AND (nombres LIKE ? OR apellidos LIKE ?)";
+    $nombre_search = '%' . $filtros['nombre'] . '%';
+    $params[] = $nombre_search;
+    $params[] = $nombre_search;
+}
+
+if (!empty($filtros['cedula'])) {
+    $sql .= " AND numero_cedula LIKE ?";
+    $params[] = '%' . $filtros['cedula'] . '%';
+}
+
+// Contar total
+$count_sql = "SELECT COUNT(*) as total FROM pacientes WHERE 1=1";
+if (!empty($filtros['nombre'])) {
+    $count_sql .= " AND (nombres LIKE ? OR apellidos LIKE ?)";
+}
+if (!empty($filtros['cedula'])) {
+    $count_sql .= " AND numero_cedula LIKE ?";
+}
+
+$count_stmt = $pdo->prepare($count_sql);
+$count_stmt->execute($params);
+$total = $count_stmt->fetch()['total'];
+$total_paginas = ceil($total / $limit);
+
+// Obtener registros
+$sql .= " ORDER BY apellidos, nombres ASC LIMIT ? OFFSET ?";
+$params[] = $limit;
+$params[] = $offset;
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$pacientes = $stmt->fetchAll();
+
+// Calcular edad
+foreach ($pacientes as &$p) {
+    $fecha_nac = new DateTime($p['fecha_nacimiento']);
+    $hoy = new DateTime();
+    $edad = $hoy->diff($fecha_nac);
+    $p['edad_anios'] = $edad->y;
+    $p['edad_meses'] = $edad->m;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Pacientes - JasHei</title>
+    <title>Pacientes - JasHei</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -81,9 +145,6 @@ $resultado = $pacienteModel->listar($filtros);
         .table-hover tbody tr:hover {
             background-color: #f9f9f9;
         }
-        .badge-nuevo {
-            background-color: #28a745;
-        }
     </style>
 </head>
 <body>
@@ -94,7 +155,7 @@ $resultado = $pacienteModel->listar($filtros);
             </a>
             <div class="d-flex align-items-center">
                 <span class="text-white me-3">
-                    <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($auth->obtenerUsuario()['nombre']); ?>
+                    <i class="bi bi-person-circle"></i> <?= htmlspecialchars((string) $user['full_name'], ENT_QUOTES, 'UTF-8') ?>
                 </span>
                 <a href="logout.php" class="btn btn-outline-light btn-sm">
                     <i class="bi bi-box-arrow-right"></i> Cerrar sesión
@@ -128,7 +189,7 @@ $resultado = $pacienteModel->listar($filtros);
             <!-- Contenido principal -->
             <div class="col-md-10 content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="bi bi-person-lines-fill"></i> Gestión de Pacientes</h2>
+                    <h2><i class="bi bi-person-lines-fill"></i> Pacientes</h2>
                     <a href="nuevo_paciente.php" class="btn btn-custom">
                         <i class="bi bi-plus-circle"></i> Nuevo Paciente
                     </a>
@@ -141,13 +202,13 @@ $resultado = $pacienteModel->listar($filtros);
                             <div class="col-md-4">
                                 <label for="nombre" class="form-label">Nombre o Apellido</label>
                                 <input type="text" class="form-control" id="nombre" name="nombre" 
-                                       value="<?php echo htmlspecialchars($filtros['nombre']); ?>" 
+                                       value="<?= htmlspecialchars($filtros['nombre'], ENT_QUOTES, 'UTF-8') ?>" 
                                        placeholder="Buscar por nombre...">
                             </div>
                             <div class="col-md-4">
                                 <label for="cedula" class="form-label">Cédula</label>
                                 <input type="text" class="form-control" id="cedula" name="cedula" 
-                                       value="<?php echo htmlspecialchars($filtros['cedula']); ?>" 
+                                       value="<?= htmlspecialchars($filtros['cedula'], ENT_QUOTES, 'UTF-8') ?>" 
                                        placeholder="Ej: 1234567890">
                             </div>
                             <div class="col-md-4 d-flex align-items-end">
@@ -160,10 +221,10 @@ $resultado = $pacienteModel->listar($filtros);
                 </div>
 
                 <!-- Tabla de pacientes -->
-                <?php if (!empty($resultado['pacientes'])): ?>
+                <?php if (!empty($pacientes)): ?>
                     <div class="card">
                         <div class="card-header bg-light">
-                            <h5 class="mb-0">Pacientes encontrados (<?php echo $resultado['total']; ?>)</h5>
+                            <h5 class="mb-0">Pacientes encontrados (<?= $total ?>)</h5>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
@@ -178,26 +239,16 @@ $resultado = $pacienteModel->listar($filtros);
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($resultado['pacientes'] as $paciente): ?>
+                                    <?php foreach ($pacientes as $p): ?>
                                         <tr>
-                                            <td><strong><?php echo htmlspecialchars($paciente['numero_cedula']); ?></strong></td>
-                                            <td><?php echo htmlspecialchars($paciente['nombres'] . ' ' . $paciente['apellidos']); ?></td>
+                                            <td><strong><?= htmlspecialchars($p['numero_cedula'], ENT_QUOTES, 'UTF-8') ?></strong></td>
+                                            <td><?= htmlspecialchars($p['nombres'] . ' ' . $p['apellidos'], ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= $p['edad_anios'] ?> años, <?= $p['edad_meses'] ?> meses</td>
+                                            <td><?= htmlspecialchars($p['telefono'] ?? 'N/A', ENT_QUOTES, 'UTF-8') ?></td>
+                                            <td><?= htmlspecialchars($p['sexo'], ENT_QUOTES, 'UTF-8') ?></td>
                                             <td>
-                                                <?php 
-                                                    $edad = $paciente['edad'];
-                                                    echo $edad['anios'] . ' años, ' . $edad['meses'] . ' meses';
-                                                ?>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($paciente['telefono'] ?? 'N/A'); ?></td>
-                                            <td><?php echo htmlspecialchars($paciente['sexo']); ?></td>
-                                            <td>
-                                                <a href="detalle_paciente.php?id=<?php echo $paciente['id']; ?>" 
-                                                   class="btn btn-sm btn-info text-white">
+                                                <a href="detalle_paciente.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-info text-white">
                                                     <i class="bi bi-eye"></i> Ver
-                                                </a>
-                                                <a href="editar_paciente.php?id=<?php echo $paciente['id']; ?>" 
-                                                   class="btn btn-sm btn-warning">
-                                                    <i class="bi bi-pencil"></i> Editar
                                                 </a>
                                             </td>
                                         </tr>
@@ -208,13 +259,13 @@ $resultado = $pacienteModel->listar($filtros);
                     </div>
 
                     <!-- Paginación -->
-                    <?php if ($resultado['total_paginas'] > 1): ?>
+                    <?php if ($total_paginas > 1): ?>
                         <nav aria-label="Paginación">
                             <ul class="pagination justify-content-center">
-                                <?php for ($i = 1; $i <= $resultado['total_paginas']; $i++): ?>
-                                    <li class="page-item <?php echo ($i === (int)$filtros['pagina']) ? 'active' : ''; ?>">
-                                        <a class="page-link" href="?nombre=<?php echo urlencode($filtros['nombre']); ?>&cedula=<?php echo urlencode($filtros['cedula']); ?>&pagina=<?php echo $i; ?>">
-                                            <?php echo $i; ?>
+                                <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
+                                    <li class="page-item <?= ($i === intval($filtros['pagina'])) ? 'active' : '' ?>">
+                                        <a class="page-link" href="?nombre=<?= urlencode($filtros['nombre']) ?>&cedula=<?= urlencode($filtros['cedula']) ?>&pagina=<?= $i ?>">
+                                            <?= $i ?>
                                         </a>
                                     </li>
                                 <?php endfor; ?>
