@@ -13,7 +13,7 @@ $user = $_SESSION['user'];
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sistema Médico | Panel Principal</title>
+  <title>JasHei | Panel Principal</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
   <style>
@@ -64,6 +64,7 @@ $user = $_SESSION['user'];
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 30px;
       margin-top: 40px;
+      margin-bottom: 40px;
     }
     .module-card {
       background: white;
@@ -103,12 +104,12 @@ $user = $_SESSION['user'];
       margin-bottom: 0;
     }
     .logout-btn {
-      margin-top: 30px;
+      text-align: center;
     }
     .footer-text {
       text-align: center;
       color: rgba(255, 255, 255, 0.8);
-      margin-top: 40px;
+      margin-top: 20px;
       font-size: 0.9rem;
     }
   </style>
@@ -134,10 +135,10 @@ $user = $_SESSION['user'];
   <div class="container">
     <div class="welcome-card">
       <h1>
-        <i class="bi bi-house-door"></i> Bienvenido al Sistema
+        <i class="bi bi-house-door"></i> Bienvenido
       </h1>
       <div class="user-info">
-        Has iniciado sesión correctamente
+        Has iniciado sesión correctamente al sistema
       </div>
       <p>
         <strong>Usuario:</strong> <?= htmlspecialchars((string) $user['email'], ENT_QUOTES, 'UTF-8') ?>
@@ -163,7 +164,7 @@ $user = $_SESSION['user'];
         </a>
       </div>
 
-      <div class="text-center logout-btn">
+      <div class="logout-btn">
         <a href="logout.php" class="btn btn-outline-danger">
           <i class="bi bi-box-arrow-right"></i> Cerrar sesión
         </a>
