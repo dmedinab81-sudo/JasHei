@@ -9,8 +9,8 @@ Este repositorio contiene una base mínima para iniciar un sistema médico con:
 
 ## Credenciales iniciales
 
-- Usuario: `admin@jashei.local`
-- Contraseña: `Admin123*`
+- Usuario: ``
+- Contraseña: ``
 
 ## Configuración rápida
 

@@ -80,7 +80,7 @@ class Atencion {
             return [
                 'exito' => true,
                 'mensaje' => 'Atención creada exitosamente',
-                'id' => $atencion id
+                'id' => $atencion_id
             ];
         } else {
             return [
