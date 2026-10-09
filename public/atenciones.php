@@ -4,7 +4,7 @@
  * Página principal para listar y buscar atenciones
  */
 
-require_once dirname(__DIR__) . '/config/Config.php';
+require_once dirname(__DIR__) . '/src/config/config.php';
 require_once CONFIG_PATH . '/Database.php';
 require_once SRC_PATH . '/Auth.php';
 require_once SRC_PATH . '/models/Atencion.php';

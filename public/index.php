@@ -64,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <p class="error"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p>
     <?php endif; ?>
 
-    <p class="hint">Usuario inicial: <strong>admin@jashei.local</strong> / <strong>Admin123*</strong></p>
   </main>
 </body>
 </html>
