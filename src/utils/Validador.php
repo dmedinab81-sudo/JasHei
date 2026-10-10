@@ -12,51 +12,55 @@ class Validador {
      * @return bool - true si es válida, false si no
      */
     public static function validarCedulaEcuador($cedula) {
-        // Remover espacios y guiones
-        $cedula = preg_replace('/[^0-9]/', '', $cedula);
-        
-        // Debe tener exactamente 10 dígitos
-        if (strlen($cedula) !== 10) {
-            return false;
-        }
-        
-        // Verificar que sea numérico
-        if (!is_numeric($cedula)) {
-            return false;
-        }
-        
-        // Verificar provincia (primeros 2 dígitos entre 01 y 24)
-        $provincia = intval(substr($cedula, 0, 2));
-        if ($provincia < 1 || $provincia > 24) {
-            return false;
-        }
-        
-        // Verificar que el tercer dígito sea válido (0-5 para personas naturales, 6 para RUC)
-        $tercerDigito = intval(substr($cedula, 2, 1));
-        if ($tercerDigito > 9) {
-            return false;
-        }
-        
-        // Validar dígito verificador
-        $digitos = str_split(substr($cedula, 0, 9));
-        $coeficientes = [2, 3, 4, 5, 6, 7, 8, 9, 2];
-        $suma = 0;
-        
-        foreach ($digitos as $index => $digito) {
-            $valor = intval($digito) * $coeficientes[$index];
-            
-            if ($valor >= 10) {
-                $valor = intval($valor / 10) + ($valor % 10);
-            }
-            
-            $suma += $valor;
-        }
-        
-        $digito_verificador = (10 - ($suma % 10)) % 10;
-        
-        return intval(substr($cedula, 9, 1)) === $digito_verificador;
+    // Conservar únicamente los dígitos
+    $cedula = preg_replace('/\D/', '', (string) $cedula);
+
+    // La cédula debe tener exactamente 10 dígitos
+    if (strlen($cedula) !== 10) {
+        return false;
     }
-    
+
+    // Validar el código de provincia: 01 a 24
+    $provincia = (int) substr($cedula, 0, 2);
+
+    if ($provincia < 1 || $provincia > 24) {
+        return false;
+    }
+
+    // Para personas naturales, el tercer dígito debe estar entre 0 y 5
+    $tercerDigito = (int) $cedula[2];
+
+    if ($tercerDigito > 5) {
+        return false;
+    }
+
+    // Calcular el dígito verificador con los primeros 9 dígitos
+    $suma = 0;
+
+    for ($i = 0; $i < 9; $i++) {
+        $digito = (int) $cedula[$i];
+
+        // Posiciones 1, 3, 5, 7 y 9: multiplicar por 2
+        if ($i % 2 === 0) {
+            $valor = $digito * 2;
+
+            // Si el resultado es mayor que 9, restar 9
+            if ($valor > 9) {
+                $valor -= 9;
+            }
+        } else {
+            // Posiciones 2, 4, 6 y 8: multiplicar por 1
+            $valor = $digito;
+        }
+
+        $suma += $valor;
+    }
+
+    $residuo = $suma % 10;
+    $digitoVerificador = ($residuo === 0) ? 0 : 10 - $residuo;
+
+    return (int) $cedula[9] === $digitoVerificador;
+}
     /**
      * Validar email
      * @param string $email
