@@ -283,31 +283,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
                                                   rows="3" placeholder="Describa el plan de tratamiento..."></textarea>
                                     </div>
                                 </div>
-
                                 <div class="row mt-4">
-                                    <div class="col-md-12 d-flex gap-2">
+                                    <div class="col-md-12 d-flex gap-2 flex-wrap">
+
                                         <button type="submit" class="btn btn-custom">
                                             <i class="bi bi-check-circle"></i> Crear Atención
                                         </button>
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="accion" value="buscar_paciente">
-                                            <button type="submit" class="btn btn-outline-secondary">
-                                                <i class="bi bi-search"></i> Buscar Otro Paciente
-                                            </button>
-                                        </form>
+
+                                        <a href="nueva_atencion.php" class="btn btn-outline-secondary">
+                                            <i class="bi bi-search"></i> Buscar Otro Paciente
+                                        </a>
+
                                         <a href="atenciones.php" class="btn btn-outline-danger">
                                             <i class="bi bi-x-circle"></i> Cancelar
                                         </a>
+
                                     </div>
                                 </div>
                             </form>
                         </div>
                     </div>
-                <?php endif; ?>
-            </div>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
+</div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
