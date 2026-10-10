@@ -202,7 +202,7 @@ $diff = $hoy->diff($edad);
             <h1>Detalle de Atención</h1>
             <div>
                 <a class="btn btn-editar" href="editar_atencion.php?id=<?php echo $atencionId; ?>">Editar</a>
-                <a class="btn" href="detalle_paciente.php?id=<?php echo $pacienteId; ?>">Volver</a>
+                <a class="btn" href="atenciones.php?id=<?php echo $pacienteId; ?>">Volver</a>
             </div>
         </div>
 
