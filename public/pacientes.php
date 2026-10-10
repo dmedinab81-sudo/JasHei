@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 session_start();
-require __DIR__ . '/../config/database.php';
+$config = require __DIR__ . '/../config/database.php';
 require __DIR__ . '/../src/Auth.php';
 
 Auth::requireLogin();
