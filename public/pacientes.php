@@ -71,12 +71,22 @@ $total = $count_stmt->fetch()['total'];
 $total_paginas = ceil($total / $limit);
 
 // Obtener registros
-$sql .= " ORDER BY apellidos, nombres ASC LIMIT ? OFFSET ?";
-$params[] = $limit;
-$params[] = $offset;
+$sql .= " ORDER BY apellidos, nombres ASC LIMIT :limite OFFSET :desplazamiento";
 
 $stmt = $pdo->prepare($sql);
-$stmt->execute($params);
+
+// Vincular los filtros de búsqueda como cadenas
+$indice = 1;
+foreach ($params as $param) {
+    $stmt->bindValue($indice, $param, PDO::PARAM_STR);
+    $indice++;
+}
+
+// LIMIT y OFFSET deben ser enteros
+$stmt->bindValue(':limite', (int) $limit, PDO::PARAM_INT);
+$stmt->bindValue(':desplazamiento', (int) $offset, PDO::PARAM_INT);
+
+$stmt->execute();
 $pacientes = $stmt->fetchAll();
 
 // Calcular edad
