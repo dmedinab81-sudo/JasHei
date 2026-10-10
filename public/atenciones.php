@@ -188,11 +188,11 @@ while ($row = $resultado->fetch_assoc()) {
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="detalle_atencion.php?id=<?php echo $atencion['id']; ?>" 
+                                                <a href="detalle_atencion.php?atencion_id=<?php echo $atencion['id']; ?>"
                                                    class="btn btn-sm btn-info text-white">
                                                     <i class="bi bi-eye"></i> Ver
                                                 </a>
-                                                <a href="editar_atencion.php?id=<?php echo $atencion['id']; ?>" 
+                                                <a href="editar_atencion.php?atencion_id=<?php echo $atencion['id']; ?>"
                                                    class="btn btn-sm btn-warning">
                                                     <i class="bi bi-pencil"></i> Editar
                                                 </a>

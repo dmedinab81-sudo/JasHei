@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     
     if ($resultado['exito']) {
         $_SESSION['mensaje_exito'] = $resultado['mensaje'];
-        header('Location: detalle_atencion.php?id=' . $resultado['id']);
+        header('Location: detalle_atencion.php?atencion_id=' . (int) $resultado['id']);
         exit;
     } else {
         $error_busqueda = $resultado['mensaje'];
