@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../src/config/config.php';
+require_once SRC_PATH . '/Auth.php';
+Auth::requireLogin();
 require_once __DIR__ . '/../src/models/Paciente.php';
 require_once __DIR__ . '/../src/models/Atencion.php';
 
@@ -99,7 +101,7 @@ $edadTexto = $diff->y . ' años, ' . $diff->m . ' meses, ' . $diff->d . ' días'
     <div class="container">
         <div class="topbar">
             <h1>Detalle del paciente</h1>
-            <a class="btn" href="index.php">Volver</a>
+            <a class="btn" href="pacientes.php">Volver a pacientes</a>
         </div>
 
         <div class="card">
